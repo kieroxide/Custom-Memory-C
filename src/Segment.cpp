@@ -6,7 +6,7 @@
 using namespace std;
 
 Segment* Segment::init(size_t size) {
-    this->size = size - sizeof(Segment);
+    this->payloadSize = size - sizeof(Segment);
     this->status = FREE;
     this->nextSegment = nullptr;
     this->memory = (char*)this + sizeof(Segment);
@@ -18,7 +18,7 @@ Segment* Segment::findFreeSegment(size_t size) {
     Segment* currentSegment = this;
     while (currentSegment != nullptr) {
         // traverse all segments within region
-        if (currentSegment->status == FREE && currentSegment->size >= size) {
+        if (currentSegment->status == FREE && currentSegment->payloadSize >= size) {
             return currentSegment;
         }
         currentSegment = currentSegment->nextSegment;
@@ -28,9 +28,9 @@ Segment* Segment::findFreeSegment(size_t size) {
 
 void* Segment::splitAndAllocate(size_t sizeAllocated) {
     // Create new segment header
-    size_t freeSizeAfterSegmentCreation = this->size - sizeAllocated;
+    size_t freeSizeAfterSegmentCreation = this->payloadSize - sizeAllocated;
     this->status = USED;
-    this->size = sizeAllocated;
+    this->payloadSize = sizeAllocated;
 
     // Don't split if no space left
     if (freeSizeAfterSegmentCreation <= sizeof(Segment)) {
@@ -39,7 +39,7 @@ void* Segment::splitAndAllocate(size_t sizeAllocated) {
     }
 
     // Split remaining size to free segment
-    void* segmentStart = (char*)this + sizeof(Segment) + this->size;
+    void* segmentStart = (char*)this + sizeof(Segment) + this->payloadSize;
     Segment* freeSegment = (Segment*)segmentStart;
     Segment* memorySegment = freeSegment->init(freeSizeAfterSegmentCreation);
 

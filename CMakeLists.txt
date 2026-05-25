@@ -23,7 +23,6 @@ FetchContent_MakeAvailable(googletest)
 
 # Add the memory library
 add_library(personalMemory
-    src/personalMemory.cpp
     src/Heap.cpp
     src/Region.cpp
     src/Segment.cpp

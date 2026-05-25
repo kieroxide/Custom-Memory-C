@@ -6,34 +6,33 @@
 
 using namespace std;
 
-Heap* Heap::create(size_t size){
-    size_t realSizeNeeded = size + sizeof(Heap) + sizeof(Region) + sizeof(Segment);
-    if (realSizeNeeded < HEAP_INIT_SIZE / 2) {
-        size = HEAP_INIT_SIZE;
+Heap* Heap::create(size_t allocSize) {
+    allocSize += sizeof(Heap) + sizeof(Region) + sizeof(Segment);
+    if (allocSize < HEAP_INIT_SIZE / 2) {
+        allocSize = HEAP_INIT_SIZE;
     }
 
-    void* memoryBlock =
-        VirtualAlloc(nullptr, realSizeNeeded, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    void* memoryBlock = VirtualAlloc(nullptr, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
     Heap* heap = (Heap*)memoryBlock;
-    heap->init(realSizeNeeded);
+    heap->init(allocSize);
     return heap;
 }
 
-Heap* Heap::init(size_t size) {
-    this->size = HEAP_INIT_SIZE - sizeof(Heap);
+Heap* Heap::init(size_t allocSize) {
+    this->payloadSize = allocSize - sizeof(Heap);
 
     // Create heap region metadata in heap block
     void* regionStart = (char*)this + sizeof(Heap);
     Region* region = (Region*)regionStart;
-    region->init(this->size);
+    region->init(this->payloadSize);
 
     this->mainRegion = region;
     return this;
 }
 
-Region* Heap::createRegion(size_t size) {
-    size_t regionSize = size + sizeof(Region) + sizeof(Segment);
+Region* Heap::createRegion(size_t allocSize) {
+    size_t regionSize = allocSize + sizeof(Region) + sizeof(Segment);
     if (regionSize < HEAP_INIT_SIZE / 2) {
         regionSize = HEAP_INIT_SIZE;
     }
@@ -42,7 +41,7 @@ Region* Heap::createRegion(size_t size) {
 
     // Create region metadata in new region block
     Region* newRegion = (Region*)memoryBlock;
-    this->size += regionSize;
+    this->payloadSize += regionSize;
     return newRegion->init(regionSize);
 }
 
@@ -53,26 +52,26 @@ bool Heap::free() {
     return success && (VirtualFree(this, FREE_ALL, MEM_RELEASE) != 0);
 }
 
-void* Heap::alloc(size_t size) {
+void* Heap::alloc(size_t allocSize) {
     // Find contigious free space in memory
-    Region* freeRegion = this->findFreeRegion(size);
+    Region* freeRegion = this->findFreeRegion(allocSize);
     if (freeRegion != nullptr) {
-        Segment* freeSegment = freeRegion->findFreeSegment(size);
+        Segment* freeSegment = freeRegion->findFreeSegment(allocSize);
         if (freeSegment != nullptr) {
-            return freeSegment->splitAndAllocate(size);
+            return freeSegment->splitAndAllocate(allocSize);
         }
     }
 
     // No free space found so allocate another region
     // Attach Region to last region in region list
-    Region* newRegion = this->createRegion(size);
+    Region* newRegion = this->createRegion(allocSize);
     Region* lastRegion = this->getLastRegion();
     lastRegion->attachRegion(newRegion);
-    return newRegion->findFreeSegment(size)->memory;
+    return newRegion->findFreeSegment(allocSize)->memory;
 }
 
 size_t Heap::getSize() {
-    return this->size;
+    return this->payloadSize;
 }
 
 Region* Heap::getLastRegion() {
@@ -86,12 +85,12 @@ Region* Heap::getLastRegion() {
     return current;
 }
 
-Region* Heap::findFreeRegion(size_t size) {
+Region* Heap::findFreeRegion(size_t allocSize) {
     Region* currentRegion = this->mainRegion;
     Segment* searchedSegment = nullptr;
     while (true) {
         // We traverse all regions until one is found
-        searchedSegment = currentRegion->findFreeSegment(size);
+        searchedSegment = currentRegion->findFreeSegment(allocSize);
         if (searchedSegment != nullptr) {
             return currentRegion;
         }

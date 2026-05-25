@@ -4,17 +4,17 @@
 
 class Heap {
   private:
-    size_t size;
+    size_t payloadSize;
     Region* mainRegion;
 
   public:
-    static Heap* create(size_t size = HEAP_INIT_SIZE);
-    Heap* init(size_t size);
+    static Heap* create(size_t allocSize = HEAP_INIT_SIZE);
+    Heap* init(size_t allocSize);
     bool free();
 
     size_t getSize();
-    void* alloc(size_t size);
+    void* alloc(size_t allocSize);
     Region* getLastRegion();
-    Region* createRegion(size_t size);
-    Region* findFreeRegion(size_t size);
+    Region* createRegion(size_t allocSize);
+    Region* findFreeRegion(size_t allocSize);
 };

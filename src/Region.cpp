@@ -8,13 +8,13 @@ using namespace std;
 
 Region* Region::init(size_t heapSize) {
     this->nextRegion = nullptr;
-    this->size = heapSize - sizeof(Region);
+    this->payloadSize = heapSize - sizeof(Region);
 
     void* segmentStart = (char*)this + sizeof(Region);
 
     // Create first free segment for region
     Segment* segment = (Segment*)segmentStart;
-    Segment* memorySegment = segment->init(this->size);
+    Segment* memorySegment = segment->init(this->payloadSize);
 
     this->nextSegment = memorySegment;
     return this;
@@ -34,12 +34,12 @@ bool Region::freeLinks() {
     return success;
 }
 
-Segment* Region::findFreeSegment(size_t size) {
+Segment* Region::findFreeSegment(size_t allocSize) {
     Region* currentRegion = this;
     Segment* searchedSegment = nullptr;
     while (true) {
         // We traverse all regions until one is found
-        searchedSegment = this->nextSegment->findFreeSegment(size);
+        searchedSegment = this->nextSegment->findFreeSegment(allocSize);
         if (searchedSegment != nullptr) {
             return searchedSegment;
         }
@@ -63,5 +63,5 @@ void Region::attachRegion(Region* region) {
 }
 
 size_t Region::getSize() {
-    return this->size;
+    return this->payloadSize;
 }

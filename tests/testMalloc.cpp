@@ -60,16 +60,30 @@ TEST(memoryTests, mallocCanAllocateTwoSegments) {
 }
 
 TEST(memoryTests, mallocResizesHeap) {
-    Heap* heap = Heap::create();
-    size_t fullAlloc = HEAP_INIT_SIZE - sizeof(Heap) - sizeof(Region) - sizeof(Segment);
+    Heap* heap = Heap::create(); // HEAP_INIT_SIZE + headers size is default
+    size_t fullAlloc = HEAP_INIT_SIZE;
 
     // Allocate two full region blocks
     void* p = heap->alloc(fullAlloc);
-    
+
     // Only first Alloc has heap header
     void* n = heap->alloc(fullAlloc + sizeof(Heap));
 
-    size_t expectedSize = 2 * HEAP_INIT_SIZE;
+    size_t expectedSize = 2*(HEAP_INIT_SIZE + sizeof(Region) + sizeof(Segment) + sizeof(Heap)) ;
+
+    EXPECT_EQ(heap->getSize() + sizeof(Heap), expectedSize);
+
+    heap->free();
+}
+
+TEST(memoryTests, mallocFullAllocOneRegion) {
+    Heap* heap = Heap::create(); // HEAP_INIT_SIZE + headers size is default
+
+    // Allocate one full region block
+    void* p = heap->alloc(HEAP_INIT_SIZE);
+
+
+    size_t expectedSize = (HEAP_INIT_SIZE + sizeof(Heap) + sizeof(Region) + sizeof(Segment));
 
     EXPECT_EQ(heap->getSize() + sizeof(Heap), expectedSize);
 

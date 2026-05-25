@@ -5,7 +5,7 @@
 
 class Region {
   private:
-    size_t size;
+    size_t payloadSize;
     Region* nextRegion;
     Segment* nextSegment;
 
@@ -13,7 +13,7 @@ class Region {
     Region* init(size_t heapSize);
     bool freeLinks();
 
-    Segment* findFreeSegment(size_t size);
+    Segment* findFreeSegment(size_t allocSize);
     size_t getSize();
     Region* getNextRegion();
     void attachRegion(Region* region);

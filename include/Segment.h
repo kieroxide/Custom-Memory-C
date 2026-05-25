@@ -5,7 +5,7 @@
 class Segment {
   private:
     enum Status { FREE, USED };
-    size_t size;
+    size_t payloadSize;
     Status status;
     Segment* nextSegment;
 
