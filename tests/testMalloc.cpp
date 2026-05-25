@@ -13,6 +13,8 @@ TEST(memoryTests, mallocReturnsNotNullPtr) {
 
     void* p = myMalloc(heap, 100);
     EXPECT_NE(p, nullptr);
+
+    freeHeap(heap);
 }
 
 TEST(memoryTests, mallocCanWriteToMemory) {
@@ -25,6 +27,8 @@ TEST(memoryTests, mallocCanWriteToMemory) {
     for (int i = 0; i < 100; i++) {
         EXPECT_EQ(c[i], 0xAA);
     }
+
+    freeHeap(heap);
 }
 
 TEST(memoryTests, mallocCanWriteStruct) {
@@ -37,6 +41,8 @@ TEST(memoryTests, mallocCanWriteStruct) {
 
     EXPECT_EQ(t->a, 42);
     EXPECT_EQ(t->b, 3.14f);
+
+    freeHeap(heap);
 }
 
 TEST(memoryTests, mallocCanAllocateTwoSegments) {
@@ -45,6 +51,8 @@ TEST(memoryTests, mallocCanAllocateTwoSegments) {
     void* p = myMalloc(heap, 100);
     void* n = myMalloc(heap, 64);
     EXPECT_NE(p, n);
+
+    freeHeap(heap);
 }
 
 TEST(memoryTests, mallocResizesHeap) {
@@ -57,6 +65,8 @@ TEST(memoryTests, mallocResizesHeap) {
     size_t expectedSize =
         (HEAP_INIT_SIZE - sizeof(Heap)) + 2 * (HEAP_INIT_SIZE + sizeof(Region) + sizeof(Segment));
     EXPECT_EQ(heap->size, expectedSize);
+
+    freeHeap(heap);
 }
 
 TEST(memoryTests, mallocResizesAndReturnsNotNullPtr) {
@@ -67,6 +77,8 @@ TEST(memoryTests, mallocResizesAndReturnsNotNullPtr) {
     void* n = myMalloc(heap, HEAP_INIT_SIZE);
     
     EXPECT_NE(n, nullptr);
+
+    freeHeap(heap);
 }
 
 TEST(memoryTests, mallocResizesAndCanWriteToMemory) {
@@ -82,4 +94,6 @@ TEST(memoryTests, mallocResizesAndCanWriteToMemory) {
     for (int i = 0; i < 100; i++) {
         EXPECT_EQ(c[i], 0xAA);
     }
+
+    freeHeap(heap);
 }
