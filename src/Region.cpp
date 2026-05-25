@@ -1,6 +1,5 @@
 #include <iostream>
 #include <windows.h>
-#include "personalMemory.h"
 #include "Region.h"
 #include "Segment.h"
 
@@ -27,7 +26,7 @@ bool Region::freeLinks() {
     Region* region = this->nextRegion;
     while (region != nullptr) {
         Region* next = region->nextRegion;
-        success = success && (VirtualFree(region, FREE_ALL, MEM_RELEASE) != 0);
+        success = success && (VirtualFree(region, WINDOWS_FREE_ALL, MEM_RELEASE) != 0);
         region = next;
     }
 

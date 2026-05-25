@@ -2,7 +2,6 @@
 #include <windows.h>
 #include "Heap.h"
 #include "Region.h"
-#include "personalMemory.h"
 
 using namespace std;
 
@@ -49,7 +48,7 @@ bool Heap::free() {
     bool success = this->mainRegion->freeLinks();
 
     // Free heap and first region
-    return success && (VirtualFree(this, FREE_ALL, MEM_RELEASE) != 0);
+    return success && (VirtualFree(this, WINDOWS_FREE_ALL, MEM_RELEASE) != 0);
 }
 
 void* Heap::alloc(size_t allocSize) {

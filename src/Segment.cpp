@@ -1,6 +1,5 @@
 #include <iostream>
 #include <windows.h>
-#include "personalMemory.h"
 #include "Segment.h"
 
 using namespace std;

@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include "personalMemory.h"
 #include "Heap.h"
 
 /* FORMAT FOR TESTS:
