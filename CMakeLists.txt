@@ -25,6 +25,8 @@ FetchContent_MakeAvailable(googletest)
 add_library(personalMemory
     src/personalMemory.cpp
     src/Heap.cpp
+    src/Region.cpp
+    src/Segment.cpp
 )
 
 
