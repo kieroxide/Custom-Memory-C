@@ -9,8 +9,8 @@ class Region {
     Segment* nextSegment;
 
   public:
-    Region* init(size_t heapSize);
     bool freeLinks();
+    Region* init(size_t heapSize);
 
     Segment* findFreeSegment(size_t allocSize);
     size_t getSize();

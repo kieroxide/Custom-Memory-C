@@ -13,6 +13,7 @@ class Segment {
     Segment* init(size_t size);
     Segment* findFreeSegment(size_t size);
     void* splitAndAllocate(size_t sizeAllocated);
+    bool free();
 
     size_t getSize();
 };

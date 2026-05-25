@@ -4,6 +4,15 @@
 
 using namespace std;
 
+bool Segment::free(){
+    if(this->status != USED){
+        return false;
+    }
+
+    this->status = FREE;
+    return true;
+}
+
 Segment* Segment::init(size_t size) {
     this->payloadSize = size - sizeof(Segment);
     this->status = FREE;

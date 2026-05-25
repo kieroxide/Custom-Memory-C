@@ -20,6 +20,6 @@ int main(int argc, char** args) {
     cout << "Debug:" << endl;
     // printAll(heap->memorySegment);
 
-    heap->free();
+    heap->freeHeap();
     return 0;
 }

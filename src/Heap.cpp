@@ -5,6 +5,13 @@
 
 using namespace std;
 
+bool Heap::dealloc(void* ptr) {
+    void* segmentStart = (char*)ptr - sizeof(Segment);
+    Segment* segment = (Segment*)segmentStart;
+
+    return segment->free();
+}
+
 Heap* Heap::create(size_t allocSize) {
     allocSize += sizeof(Heap) + sizeof(Region) + sizeof(Segment);
     if (allocSize < HEAP_INIT_SIZE / 2) {
@@ -44,7 +51,7 @@ Region* Heap::createRegion(size_t allocSize) {
     return newRegion->init(regionSize);
 }
 
-bool Heap::free() {
+bool Heap::freeHeap() {
     bool success = this->mainRegion->freeLinks();
 
     // Free heap and first region
