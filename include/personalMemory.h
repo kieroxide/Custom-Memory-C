@@ -17,17 +17,17 @@ struct Region {
     Region* nextRegion;
 };
 
-struct Heap {
+struct HeapStruct {
     size_t size;
     Region* mainRegion;
 };
 
 void printAll(Segment* memory);
 
-Heap* initHeap();
-bool freeHeap(Heap* heap);
+HeapStruct* initHeap();
+bool freeHeap(HeapStruct* heap);
 
-void* myMalloc(Heap* heap, size_t size);
+void* myMalloc(HeapStruct* heap, size_t size);
 
 Segment* createSegment(size_t size, Status status, void* memory, Segment* nextSegment = nullptr);
 
