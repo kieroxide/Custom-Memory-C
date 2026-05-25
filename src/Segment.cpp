@@ -4,19 +4,44 @@
 
 using namespace std;
 
-bool Segment::free(){
-    if(this->status != USED){
+bool Segment::free() {
+    if (this->status != USED) {
         return false;
     }
-
     this->status = FREE;
+
+    Segment* current = this;
+
+    // Segment to left is free
+    if (current->prevSegment != nullptr && current->prevSegment->status == FREE) {
+        // Left <- Right
+        current = current->prevSegment->mergeFreeRight(current);
+    }
+
+    // Segment to right is free
+    if (current->nextSegment != nullptr && current->nextSegment->status == FREE) {
+        // Left -> Right
+        current->mergeFreeRight(current->nextSegment);
+    }
     return true;
 }
 
-Segment* Segment::init(size_t size) {
+Segment* Segment::mergeFreeRight(Segment* nextSegment) {
+    if(nextSegment->nextSegment != nullptr){
+        nextSegment->nextSegment->prevSegment = this;
+    }
+    
+    size_t totalSegSize = nextSegment->getSize() + sizeof(Segment);
+    this->payloadSize += totalSegSize;
+    this->nextSegment = nextSegment->nextSegment;
+    return this;
+}
+
+Segment* Segment::init(size_t size, Segment* prevSegment) {
     this->payloadSize = size - sizeof(Segment);
     this->status = FREE;
     this->nextSegment = nullptr;
+    this->prevSegment = prevSegment;
     this->memory = (char*)this + sizeof(Segment);
 
     return this;
@@ -49,8 +74,12 @@ void* Segment::splitAndAllocate(size_t sizeAllocated) {
     // Split remaining size to free segment
     void* segmentStart = (char*)this + sizeof(Segment) + this->payloadSize;
     Segment* freeSegment = (Segment*)segmentStart;
-    Segment* memorySegment = freeSegment->init(freeSizeAfterSegmentCreation);
+    Segment* memorySegment = freeSegment->init(freeSizeAfterSegmentCreation, this);
 
     this->nextSegment = freeSegment;
     return this->memory;
+}
+
+size_t Segment::getSize(){
+    return this->payloadSize;
 }

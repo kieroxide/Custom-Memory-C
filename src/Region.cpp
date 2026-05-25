@@ -13,7 +13,7 @@ Region* Region::init(size_t heapSize) {
 
     // Create first free segment for region
     Segment* segment = (Segment*)segmentStart;
-    Segment* memorySegment = segment->init(this->payloadSize);
+    Segment* memorySegment = segment->init(this->payloadSize, nullptr);
 
     this->nextSegment = memorySegment;
     return this;
