@@ -18,7 +18,12 @@ int main(int argc, char** args) {
     cout << "Program Output: " << endl;
     cout << string << endl;
     cout << "Debug:" << endl;
+
     // printAll(heap->memorySegment);
+
+    void* s = heap->realloc(myString, 10);
+    char* str = static_cast<char*>(s);
+    cout << str[0] << endl;
 
     heap->freeHeap();
     return 0;

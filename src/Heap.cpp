@@ -5,6 +5,36 @@
 
 using namespace std;
 
+void* Heap::realloc(void* ptr, size_t newSize) {
+    Segment* segment = (Segment*)((char*)ptr - sizeof(Segment));
+    size_t size = segment->getSize();
+
+    cout << segment->getSize();
+    if (newSize == size) {
+        return ptr;
+    }
+
+    if (newSize < size) {
+        // Size Reduces
+        segment->payloadSize = newSize;
+
+        // We create a new free segment if there is space
+        if (size - newSize >= sizeof(Segment)) {
+            Segment* freeSeg = (Segment*)((char*)segment->memory + newSize);
+            size_t remainingSize = size - newSize;
+            // Link A Free and B: A -> B => A -> free -> B
+            freeSeg->init(remainingSize, segment);
+            freeSeg->nextSegment = segment->nextSegment;
+            freeSeg->merge();
+            segment->nextSegment = freeSeg;
+        } else {
+            // Could merge without need for header
+            // TODO
+        }
+        return segment->memory;
+    }
+}
+
 bool Heap::dealloc(void* ptr) {
     void* segmentStart = (char*)ptr - sizeof(Segment);
     Segment* segment = (Segment*)segmentStart;

@@ -11,8 +11,9 @@ class Heap {
   public:
     static Heap* create(size_t allocSize = HEAP_INIT_SIZE);
     bool freeHeap();
-    
+
     void* alloc(size_t allocSize);
+    void* realloc(void* ptr, size_t newSize);
     bool dealloc(void* ptr);
 
     size_t getSize();

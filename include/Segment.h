@@ -4,19 +4,20 @@
 class Segment {
   private:
     enum Status { FREE, USED };
-    size_t payloadSize;
     Status status;
 
   public:
+    size_t payloadSize;
     Segment* nextSegment;
     Segment* prevSegment;
     void* memory;
-    Segment* init(size_t size, Segment* prevSegment);
+    Segment* init(size_t size, Segment* prevSegment, Status status = FREE);
     Segment* findFreeSegment(size_t size);
     void* splitAndAllocate(size_t sizeAllocated);
     bool free();
 
     Segment* mergeFreeRight(Segment* nextSegment);
+    Segment* merge();
 
     size_t getSize();
 };

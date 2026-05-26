@@ -35,7 +35,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE personalMemory)
 # Test executable
 add_executable(
     memoryTests
-    tests/testMalloc.cpp
+    tests/testAlloc.cpp
+    tests/testReAlloc.cpp
+    tests/testDeAlloc.cpp
 )
 
 # Link against your code + gtest

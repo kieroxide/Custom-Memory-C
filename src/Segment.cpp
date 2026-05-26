@@ -9,7 +9,13 @@ bool Segment::free() {
         return false;
     }
     this->status = FREE;
+    
+    this->merge();
 
+    return true;
+}
+
+Segment* Segment::merge(){
     Segment* current = this;
 
     // Segment to left is free
@@ -23,23 +29,24 @@ bool Segment::free() {
         // Left -> Right
         current->mergeFreeRight(current->nextSegment);
     }
-    return true;
+
+    return current;
 }
 
 Segment* Segment::mergeFreeRight(Segment* nextSegment) {
     if(nextSegment->nextSegment != nullptr){
         nextSegment->nextSegment->prevSegment = this;
     }
-    
+
     size_t totalSegSize = nextSegment->getSize() + sizeof(Segment);
     this->payloadSize += totalSegSize;
     this->nextSegment = nextSegment->nextSegment;
     return this;
 }
 
-Segment* Segment::init(size_t size, Segment* prevSegment) {
+Segment* Segment::init(size_t size, Segment* prevSegment, Status status) {
     this->payloadSize = size - sizeof(Segment);
-    this->status = FREE;
+    this->status = status;
     this->nextSegment = nullptr;
     this->prevSegment = prevSegment;
     this->memory = (char*)this + sizeof(Segment);
