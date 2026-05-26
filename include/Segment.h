@@ -3,10 +3,10 @@
 
 class Segment {
   private:
+  
+  public:
     enum Status { FREE, USED };
     Status status;
-
-  public:
     size_t payloadSize;
     Segment* nextSegment;
     Segment* prevSegment;
@@ -20,4 +20,7 @@ class Segment {
     Segment* merge();
 
     size_t getSize();
+    static Segment* memoryToSegment(void* memoryPtr,
+                                    size_t offsetToHeader = sizeof(Segment),
+                                    bool forwards = false);
 };

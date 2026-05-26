@@ -2,11 +2,12 @@
 #include <windows.h>
 #include "Heap.h"
 #include "Region.h"
+#include "Segment.h"
 
 using namespace std;
 
 void* Heap::realloc(void* ptr, size_t newSize) {
-    Segment* segment = (Segment*)((char*)ptr - sizeof(Segment));
+    Segment* segment = Segment::memoryToSegment(ptr);
     size_t size = segment->getSize();
 
     cout << segment->getSize();
@@ -20,7 +21,7 @@ void* Heap::realloc(void* ptr, size_t newSize) {
 
         // We create a new free segment if there is space
         if (size - newSize >= sizeof(Segment)) {
-            Segment* freeSeg = (Segment*)((char*)segment->memory + newSize);
+            Segment* freeSeg = Segment::memoryToSegment(segment->memory, newSize, true);
             size_t remainingSize = size - newSize;
             // Link A Free and B: A -> B => A -> free -> B
             freeSeg->init(remainingSize, segment);
@@ -32,12 +33,48 @@ void* Heap::realloc(void* ptr, size_t newSize) {
             // TODO
         }
         return segment->memory;
+    } else {
+        // Check if we can grow into right neighbour
+        size_t sizeGrowthRequired = newSize - size;
+        size_t rightLeeway = segment->nextSegment->getSize() - sizeGrowthRequired;
+        if (segment->nextSegment->status == 0 && rightLeeway >= 0) {
+            // If we can grow into the right segment
+            Segment* nextSegment = segment->nextSegment;
+
+            segment->payloadSize += sizeGrowthRequired;
+            nextSegment->payloadSize -= sizeGrowthRequired;
+            Segment* movedSegment =
+                Segment::memoryToSegment(segment->memory, segment->getSize(), true);
+
+            movedSegment->init(nextSegment->payloadSize, segment);
+            segment->nextSegment = movedSegment;
+            return segment->memory;
+        } else {
+            // Find contigious free space in memory
+            Region* freeRegion = this->findFreeRegion(newSize);
+            if (freeRegion != nullptr) {
+                Segment* freeSegment = freeRegion->findFreeSegment(newSize);
+                if (freeSegment != nullptr) {
+                    void* memory = freeSegment->splitAndAllocate(newSize);
+                    memcpy(memory, segment->memory, segment->getSize());
+                    return memory;
+                }
+            }
+
+            // No free space found so allocate another region
+            // Attach Region to last region in region list
+            Region* newRegion = this->createRegion(newSize);
+            Region* lastRegion = this->getLastRegion();
+            lastRegion->attachRegion(newRegion);
+            void* memory = newRegion->findFreeSegment(newSize)->memory;
+            memcpy(memory, segment->memory, segment->getSize());
+            return memory;
+        }
     }
 }
 
 bool Heap::dealloc(void* ptr) {
-    void* segmentStart = (char*)ptr - sizeof(Segment);
-    Segment* segment = (Segment*)segmentStart;
+    Segment* segment = Segment::memoryToSegment(ptr);
 
     return segment->free();
 }

@@ -30,3 +30,21 @@ TEST(memoryTests, reallocSameSize) {
 
     heap->freeHeap();
 }
+
+
+TEST(memoryTests, reallocHasToCopy) {
+    Heap* heap = Heap::create();
+
+    void* e = heap->alloc(100);
+    void* f = heap->alloc(100);
+    void* g = heap->alloc(100);
+
+    void* fr = heap->realloc(e, 200);
+    Segment* frSeg = Segment::memoryToSegment(fr);
+    
+    EXPECT_NE(f, fr);
+    EXPECT_EQ(frSeg->getSize(), 200);
+
+
+    heap->freeHeap();
+}
