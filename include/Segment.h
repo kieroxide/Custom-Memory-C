@@ -1,7 +1,7 @@
 #pragma once
 #include "HeapInternal.h"
 
-class Segment {
+class alignas(HEAP_ALIGNMENT) Segment {
   private:
     enum Status { FREE, USED };
     Status status;

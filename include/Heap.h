@@ -2,7 +2,7 @@
 #include "HeapInternal.h"
 #include "Region.h"
 
-class Heap {
+class alignas(HEAP_ALIGNMENT) Heap {
   private:
     size_t payloadSize;
     Region* mainRegion;
@@ -14,7 +14,7 @@ class Heap {
   public:
     static constexpr size_t MINIMUM_REGION_SIZE = 1024 * 1000; // 1000kb Bytes
     static constexpr size_t MINIMUM_SEGMENT_SIZE = 8;
-    
+
     static Heap* create(size_t allocSize = MINIMUM_REGION_SIZE);
     bool freeHeap();
     void* alloc(size_t allocSize);

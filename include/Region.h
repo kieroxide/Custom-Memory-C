@@ -2,7 +2,7 @@
 #include "HeapInternal.h"
 #include "Segment.h"
 
-class Region {
+class alignas(HEAP_ALIGNMENT) Region {
   private:
     size_t payloadSize;
     Region* nextRegion;
