@@ -4,6 +4,46 @@
 
 using namespace std;
 
+bool Segment::attemptRightMerge(size_t newSize) {
+    // Check if we can grow into right neighbour
+    size_t sizeGrowthRequired = newSize - this->payloadSize;
+    size_t rightLeeway = this->nextSegment->getSize() - sizeGrowthRequired;
+    if (this->nextSegment->status == 0 && rightLeeway >= 0) {
+        // If we can grow into the right segment
+        Segment* nextSegment = this->nextSegment;
+
+        this->payloadSize += sizeGrowthRequired;
+        nextSegment->payloadSize -= sizeGrowthRequired;
+        Segment* movedSegment = Segment::memoryToSegment(this->memory, this->getSize(), true);
+
+        movedSegment->init(nextSegment->payloadSize, this);
+        this->nextSegment = movedSegment;
+        return true;
+    }
+    return false;
+}
+
+Segment* Segment::reduceSize(size_t newSize) {
+    // Size Reduces
+    size_t currentSize = this->payloadSize;
+    this->payloadSize = newSize;
+
+    // We create a new free segment if there is space
+    if (currentSize - newSize >= sizeof(Segment)) {
+        Segment* freeSeg = Segment::memoryToSegment(this->memory, newSize, true);
+        size_t remainingSize = currentSize - newSize;
+        // Link A Free and B: A -> B => A -> free -> B
+        freeSeg->init(remainingSize, this);
+        freeSeg->nextSegment = this->nextSegment;
+        freeSeg->merge();
+        this->nextSegment = freeSeg;
+    } else {
+        // Could merge without need for header
+        // TODO
+    }
+    return this;
+}
+
 Segment* Segment::memoryToSegment(void* memoryPtr, size_t offsetToHeader, bool forwards) {
     if (forwards) {
         return (Segment*)((char*)memoryPtr + offsetToHeader);
@@ -97,4 +137,16 @@ void* Segment::splitAndAllocate(size_t sizeAllocated) {
 
 size_t Segment::getSize() {
     return this->payloadSize;
+}
+
+Segment* Segment::TESTING_getNextSegment() {
+    return this->nextSegment;
+}
+
+Segment* Segment::TESTING_getPrevSegment() {
+    return this->prevSegment;
+}
+
+void* Segment::getMemory(){
+    return this->memory;
 }

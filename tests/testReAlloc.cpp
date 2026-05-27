@@ -48,3 +48,25 @@ TEST(memoryTests, reallocHasToCopy) {
 
     heap->freeHeap();
 }
+
+TEST(memoryTests, reallocCanGrowInSizeWithNoCopy) {
+    Heap* heap = Heap::create();
+
+    
+    void* a = heap->alloc(100);
+    void* b = heap->alloc(100);
+    void* c = heap->alloc(100);
+    void* d = heap->alloc(100);
+    void* e = heap->alloc(100);
+
+    heap->dealloc(d);
+
+    void* cRe = heap->realloc(c, 200);
+    Segment* seg = Segment::memoryToSegment(cRe);
+    
+    EXPECT_EQ(c, cRe);
+    EXPECT_EQ(seg->getSize(), 200);
+
+
+    heap->freeHeap();
+}
