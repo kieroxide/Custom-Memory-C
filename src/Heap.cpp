@@ -7,6 +7,7 @@
 using namespace std;
 
 void* Heap::realloc(void* ptr, size_t newSize) {
+    newSize = max(newSize, Heap::MINIMUM_SEGMENT_SIZE);
     Segment* segment = Segment::memoryToSegment(ptr);
     size_t size = segment->getSize();
 
@@ -15,13 +16,16 @@ void* Heap::realloc(void* ptr, size_t newSize) {
     }
 
     if (newSize < size) {
-        return segment->reduceSize(newSize)->getMemory();
+        // Reduce Size Branch
+        return segment->reduceSize(newSize, Heap::MINIMUM_SEGMENT_SIZE)->getMemory();
     } else {
         if (segment->attemptRightMerge(newSize)) {
             return segment->getMemory();
         } else {
+            // Allocate new segment and copy data
             void* newMemPtr = this->alloc(newSize);
             memcpy(newMemPtr, segment->getMemory(), segment->getSize());
+            segment->free();
             return newMemPtr;
         }
     }
@@ -35,9 +39,6 @@ bool Heap::dealloc(void* ptr) {
 
 Heap* Heap::create(size_t allocSize) {
     allocSize += sizeof(Heap) + sizeof(Region) + sizeof(Segment);
-    if (allocSize < HEAP_INIT_SIZE / 2) {
-        allocSize = HEAP_INIT_SIZE;
-    }
 
     void* memoryBlock = VirtualAlloc(nullptr, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
@@ -47,6 +48,7 @@ Heap* Heap::create(size_t allocSize) {
 }
 
 Heap* Heap::init(size_t allocSize) {
+    allocSize = max(Heap::MINIMUM_REGION_SIZE, allocSize);
     this->payloadSize = allocSize - sizeof(Heap);
 
     // Create heap region metadata in heap block
@@ -60,9 +62,7 @@ Heap* Heap::init(size_t allocSize) {
 
 Region* Heap::createRegion(size_t allocSize) {
     size_t regionSize = allocSize + sizeof(Region) + sizeof(Segment);
-    if (regionSize < HEAP_INIT_SIZE / 2) {
-        regionSize = HEAP_INIT_SIZE;
-    }
+    regionSize = max(Heap::MINIMUM_REGION_SIZE, regionSize);
 
     void* memoryBlock = VirtualAlloc(nullptr, regionSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
@@ -80,6 +80,8 @@ bool Heap::freeHeap() {
 }
 
 void* Heap::alloc(size_t allocSize) {
+    allocSize = max(allocSize, Heap::MINIMUM_SEGMENT_SIZE);
+
     // Find contigious free space in memory
     Region* freeRegion = this->findFreeRegion(allocSize);
     if (freeRegion != nullptr) {
@@ -130,4 +132,8 @@ Region* Heap::findFreeRegion(size_t allocSize) {
     }
 
     return nullptr;
+}
+
+Region* Heap::TESTING_findFreeRegion(size_t allocSize) {
+    return this->findFreeRegion(allocSize);
 }

@@ -1,14 +1,15 @@
 #include <iostream>
 #include <windows.h>
 #include "Segment.h"
+#include "Heap.h"
 
 using namespace std;
 
 bool Segment::attemptRightMerge(size_t newSize) {
     // Check if we can grow into right neighbour
     size_t sizeGrowthRequired = newSize - this->payloadSize;
-    size_t rightLeeway = this->nextSegment->getSize() - sizeGrowthRequired;
-    if (this->nextSegment->status == 0 && rightLeeway >= 0) {
+    
+    if (this->nextSegment->status == FREE &&  this->nextSegment->getSize() >= sizeGrowthRequired) {
         // If we can grow into the right segment
         Segment* nextSegment = this->nextSegment;
 
@@ -23,24 +24,25 @@ bool Segment::attemptRightMerge(size_t newSize) {
     return false;
 }
 
-Segment* Segment::reduceSize(size_t newSize) {
-    // Size Reduces
+Segment* Segment::reduceSize(size_t newSize, size_t minSegmentPayloadSize) {
     size_t currentSize = this->payloadSize;
-    this->payloadSize = newSize;
-
+    
     // We create a new free segment if there is space
-    if (currentSize - newSize >= sizeof(Segment)) {
+    // We do not change size if not enough space for a new segment
+    if (currentSize - newSize >= sizeof(Segment) + minSegmentPayloadSize ) {
+        // Size Reduces
+        this->payloadSize = newSize;
         Segment* freeSeg = Segment::memoryToSegment(this->memory, newSize, true);
         size_t remainingSize = currentSize - newSize;
+
         // Link A Free and B: A -> B => A -> free -> B
         freeSeg->init(remainingSize, this);
         freeSeg->nextSegment = this->nextSegment;
         freeSeg->merge();
         this->nextSegment = freeSeg;
-    } else {
-        // Could merge without need for header
-        // TODO
     }
+
+
     return this;
 }
 
@@ -121,7 +123,7 @@ void* Segment::splitAndAllocate(size_t sizeAllocated) {
     this->payloadSize = sizeAllocated;
 
     // Don't split if no space left
-    if (freeSizeAfterSegmentCreation <= sizeof(Segment)) {
+    if (freeSizeAfterSegmentCreation <= sizeof(Segment) + Heap::MINIMUM_SEGMENT_SIZE) {
         this->nextSegment = nullptr;
         return this->memory;
     }
@@ -147,6 +149,6 @@ Segment* Segment::TESTING_getPrevSegment() {
     return this->prevSegment;
 }
 
-void* Segment::getMemory(){
+void* Segment::getMemory() {
     return this->memory;
 }

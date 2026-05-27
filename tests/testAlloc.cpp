@@ -59,8 +59,8 @@ TEST(memoryTests, mallocCanAllocateTwoSegments) {
 }
 
 TEST(memoryTests, mallocResizesHeap) {
-    Heap* heap = Heap::create(); // HEAP_INIT_SIZE + headers size is default
-    size_t fullAlloc = HEAP_INIT_SIZE;
+    Heap* heap = Heap::create(); // Heap::MINIMUM_REGION_SIZE + headers size is default
+    size_t fullAlloc = Heap::MINIMUM_REGION_SIZE;
 
     // Allocate two full region blocks
     void* p = heap->alloc(fullAlloc);
@@ -68,7 +68,7 @@ TEST(memoryTests, mallocResizesHeap) {
     // Only first Alloc has heap header
     void* n = heap->alloc(fullAlloc + sizeof(Heap));
 
-    size_t expectedSize = 2 * (HEAP_INIT_SIZE + sizeof(Region) + sizeof(Segment) + sizeof(Heap));
+    size_t expectedSize = 2 * (Heap::MINIMUM_REGION_SIZE + sizeof(Region) + sizeof(Segment) + sizeof(Heap));
 
     EXPECT_EQ(heap->getSize() + sizeof(Heap), expectedSize);
 
@@ -76,12 +76,12 @@ TEST(memoryTests, mallocResizesHeap) {
 }
 
 TEST(memoryTests, mallocFullAllocOneRegion) {
-    Heap* heap = Heap::create(); // HEAP_INIT_SIZE + headers size is default
+    Heap* heap = Heap::create(); // Heap::MINIMUM_REGION_SIZE + headers size is default
 
     // Allocate one full region block
-    void* p = heap->alloc(HEAP_INIT_SIZE);
+    void* p = heap->alloc(Heap::MINIMUM_REGION_SIZE);
 
-    size_t expectedSize = (HEAP_INIT_SIZE + sizeof(Heap) + sizeof(Region) + sizeof(Segment));
+    size_t expectedSize = (Heap::MINIMUM_REGION_SIZE + sizeof(Heap) + sizeof(Region) + sizeof(Segment));
 
     EXPECT_EQ(heap->getSize() + sizeof(Heap), expectedSize);
 
@@ -90,7 +90,7 @@ TEST(memoryTests, mallocFullAllocOneRegion) {
 
 TEST(memoryTests, mallocResizesAndReturnsNotNullPtr) {
     Heap* heap = Heap::create();
-    size_t fullAlloc = HEAP_INIT_SIZE - sizeof(Heap) - sizeof(Region) - sizeof(Segment);
+    size_t fullAlloc = Heap::MINIMUM_REGION_SIZE - sizeof(Heap) - sizeof(Region) - sizeof(Segment);
 
     // Allocate two full region blocks
     void* p = heap->alloc(fullAlloc);
@@ -103,7 +103,7 @@ TEST(memoryTests, mallocResizesAndReturnsNotNullPtr) {
 
 TEST(memoryTests, mallocResizesAndCanWriteToMemory) {
     Heap* heap = Heap::create();
-    size_t fullAlloc = HEAP_INIT_SIZE - sizeof(Heap) - sizeof(Region) - sizeof(Segment);
+    size_t fullAlloc = Heap::MINIMUM_REGION_SIZE - sizeof(Heap) - sizeof(Region) - sizeof(Segment);
 
     // Allocate two full region blocks
     void* p = heap->alloc(fullAlloc);
@@ -138,7 +138,7 @@ TEST(memoryTests, mallocSplitsSegmentsCorrectly) {
     // We allocate 100 bytes so our next free segment
     // Should be at p + 100 bytes
     void* p = heap->alloc(100);
-    Region* r = heap->findFreeRegion(100);
+    Region* r = heap->TESTING_findFreeRegion(100);
     Segment* s = r->findFreeSegment(100);
 
     void* expectedNextFreeSeg = (char*)p + 100;

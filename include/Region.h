@@ -9,11 +9,10 @@ class Region {
     Segment* nextSegment;
 
   public:
-    bool freeLinks();
     Region* init(size_t heapSize);
-
-    Segment* findFreeSegment(size_t allocSize);
-    size_t getSize();
     Region* getNextRegion();
+    Segment* findFreeSegment(size_t allocSize);
+    bool freeLinks();
+    size_t getSize();
     void attachRegion(Region* region);
 };

@@ -6,15 +6,14 @@ TEST(memoryTests, reallocCanReduceSizeAndMerge) {
 
     void* e = heap->alloc(100);
 
+    void* r = heap->realloc(e, 10);
 
-    void* r = heap->realloc(e, 5);
-
-    Region* re = heap->findFreeRegion(20);
+    Region* re = heap->TESTING_findFreeRegion(20);
     Segment* s = re->findFreeSegment(20);
 
-    EXPECT_EQ(s->getSize(), HEAP_INIT_SIZE - 5 - sizeof(Segment));
+    EXPECT_EQ(s->getSize(),
+              Heap::MINIMUM_REGION_SIZE - 10 - sizeof(Segment));
     EXPECT_EQ(e, r);
-
 
     heap->freeHeap();
 }
@@ -27,10 +26,8 @@ TEST(memoryTests, reallocSameSize) {
 
     EXPECT_EQ(e, r);
 
-
     heap->freeHeap();
 }
-
 
 TEST(memoryTests, reallocHasToCopy) {
     Heap* heap = Heap::create();
@@ -41,10 +38,9 @@ TEST(memoryTests, reallocHasToCopy) {
 
     void* fr = heap->realloc(e, 200);
     Segment* frSeg = Segment::memoryToSegment(fr);
-    
+
     EXPECT_NE(f, fr);
     EXPECT_EQ(frSeg->getSize(), 200);
-
 
     heap->freeHeap();
 }
@@ -52,7 +48,6 @@ TEST(memoryTests, reallocHasToCopy) {
 TEST(memoryTests, reallocCanGrowInSizeWithNoCopy) {
     Heap* heap = Heap::create();
 
-    
     void* a = heap->alloc(100);
     void* b = heap->alloc(100);
     void* c = heap->alloc(100);
@@ -63,10 +58,25 @@ TEST(memoryTests, reallocCanGrowInSizeWithNoCopy) {
 
     void* cRe = heap->realloc(c, 200);
     Segment* seg = Segment::memoryToSegment(cRe);
-    
+
     EXPECT_EQ(c, cRe);
     EXPECT_EQ(seg->getSize(), 200);
 
+    heap->freeHeap();
+}
+
+TEST(memoryTests, reallocWhenCopiedOldSegmentIsFree) {
+    Heap* heap = Heap::create();
+
+    void* a = heap->alloc(100);
+    void* b = heap->alloc(100);
+
+    void* aRealloc = heap->realloc(a, 200);
+    Segment* newSeg = Segment::memoryToSegment(aRealloc);
+    Segment* oldSeg = heap->TESTING_findFreeRegion(100)->findFreeSegment(100);
+
+    EXPECT_NE(a, aRealloc);
+    EXPECT_EQ(oldSeg->getMemory(), a);
 
     heap->freeHeap();
 }
