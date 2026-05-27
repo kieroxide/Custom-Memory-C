@@ -18,7 +18,7 @@ TEST(memoryTests, deallocFreeWillMergeContigiousFreeSegmentsPt1) {
     EXPECT_EQ(rese, true);
     EXPECT_EQ(resd, true);
 
-    EXPECT_EQ(s->memory, d);
+    EXPECT_EQ(s->getMemory(), d);
     EXPECT_EQ(s->getSize(), 20 + sizeof(Segment));
 
     heap->freeHeap();
@@ -39,10 +39,10 @@ TEST(memoryTests, deallocFreeWillMergeContigiousFreeSegmentsPt2) {
     Region* r = heap->findFreeRegion(20);
     Segment* s = r->findFreeSegment(20);
 
-    EXPECT_EQ(s->memory, e);
+    EXPECT_EQ(s->getMemory(), e);
     EXPECT_EQ(s->getSize(), 20 + sizeof(Segment));
-    EXPECT_EQ(s->prevSegment->memory, d);
-    EXPECT_EQ(s->nextSegment->memory, g);
+    EXPECT_EQ(s->TESTING_getPrevSegment()->getMemory(), d);
+    EXPECT_EQ(s->TESTING_getNextSegment()->getMemory(), g);
 
     heap->freeHeap();
 }
@@ -63,10 +63,10 @@ TEST(memoryTests, deallocFreeWillMergeContigiousFreeSegmentsPt3) {
     Region* r = heap->findFreeRegion(20);
     Segment* s = r->findFreeSegment(20);
 
-    EXPECT_EQ(s->memory, d);
+    EXPECT_EQ(s->getMemory(), d);
     EXPECT_EQ(s->getSize(), 30 + (2 * sizeof(Segment)));
-    EXPECT_EQ(s->prevSegment, nullptr);
-    EXPECT_EQ(s->nextSegment->memory, g);
+    EXPECT_EQ(s->TESTING_getPrevSegment(), nullptr);
+    EXPECT_EQ(s->TESTING_getNextSegment()->getMemory(), g);
 
     heap->freeHeap();
 }
@@ -82,10 +82,10 @@ TEST(memoryTests, deallocFreeWillMergeContigiousFreeSegmentsPt4) {
     Region* r = heap->findFreeRegion(20);
     Segment* s = r->findFreeSegment(20);
 
-    EXPECT_EQ(s->memory, e);
+    EXPECT_EQ(s->getMemory(), e);
     EXPECT_EQ(s->getSize(), HEAP_INIT_SIZE);
-    EXPECT_EQ(s->prevSegment, nullptr);
-    EXPECT_EQ(s->nextSegment, nullptr);
+    EXPECT_EQ(s->TESTING_getPrevSegment(), nullptr);
+    EXPECT_EQ(s->TESTING_getNextSegment(), nullptr);
 
     heap->freeHeap();
 }
